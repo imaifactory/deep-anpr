@@ -158,14 +158,14 @@ def make_affine_transform(from_shape, to_shape,
 
 
 def generate_code():
-    return "{}{}{}{} {}{}{}".format(
-        random.choice(common.LETTERS),
-        random.choice(common.LETTERS),
+    return "{}{}{}{}{}{}{}".format(
         random.choice(common.DIGITS),
         random.choice(common.DIGITS),
-        random.choice(common.LETTERS),
-        random.choice(common.LETTERS),
-        random.choice(common.LETTERS))
+        random.choice(common.DIGITS),
+        random.choice(common.DIGITS),
+        random.choice(common.DIGITS),
+        random.choice(common.DIGITS),
+        random.choice(common.DIGITS))
 
 
 def rounded_rect(shape, radius):
@@ -204,6 +204,10 @@ def generate_plate(font_height, char_ims):
     y = v_padding 
     for c in code:
         char_im = char_ims[c]
+
+        if(random.random() < 0.25):
+          char_im = cv2.resize(char_im,(0,0), fx=0.5, fy=0.5)
+
         ix, iy = int(x), int(y)
         text_mask[iy:iy + char_im.shape[0], ix:ix + char_im.shape[1]] = char_im
         x += char_im.shape[1] + spacing
@@ -218,7 +222,7 @@ def generate_bg(num_bg_images):
     found = False
     while not found:
         fname = "bgs/{:08d}.jpg".format(random.randint(0, num_bg_images - 1))
-        bg = cv2.imread(fname, cv2.CV_LOAD_IMAGE_GRAYSCALE) / 255.
+        bg = cv2.imread(fname, cv2.IMREAD_GRAYSCALE) / 255.
         if (bg.shape[1] >= OUTPUT_SHAPE[1] and
             bg.shape[0] >= OUTPUT_SHAPE[0]):
             found = True
@@ -252,6 +256,8 @@ def generate_im(char_ims, num_bg_images):
 
     out += numpy.random.normal(scale=0.05, size=out.shape)
     out = numpy.clip(out, 0., 1.)
+    if(random.random() > 0.5):
+      out = 1 - out
 
     return out, code, not out_of_bounds
 
@@ -287,6 +293,6 @@ if __name__ == "__main__":
     for img_idx, (im, c, p) in enumerate(im_gen):
         fname = "test/{:08d}_{}_{}.png".format(img_idx, c,
                                                "1" if p else "0")
-        print fname
+        print (fname)
         cv2.imwrite(fname, im * 255.)
 
